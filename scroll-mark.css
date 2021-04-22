@@ -1,0 +1,20 @@
+.scroll-mark {
+  position: relative;
+  overflow-y: auto;
+}
+.scroll-bar {
+  position: fixed;
+  top: initial; bottom: initial;
+  right: 0; left: 0;
+  height: 0;
+  /* background: rgba(0, 0, 0, 0.15); */
+  background: rgba(204, 177,126,0.15);
+  opacity: 0;
+  transition: 0.3s linear opacity;
+  z-index: -1;
+}
+.scroll-bar.active {
+  opacity: 1;
+  height: auto;
+  transition: none;
+}
