@@ -18,14 +18,14 @@ Animate a visual anchor to help positional tracking
 - Modify variables and styles if needed
 
 ### Options
-`scroll-mark.js`
-- `scrollm.config.delay
+`./scroll-mark.js`
+- `scrollm.config.delay`
 Time between scroll events. Under will be 1 continuous event. Over will end first, and start fresh
 - `scrollm.config.offset`
 Beginning height for scroll mark. Adjust if you want it higher/lower (relative to scroll direction)
 
 ### TODO
 - Console notification if class added to the wrong element
-` Console notification if not automatically acting on `<body>`
+- Console notification if not automatically acting on `<body>`
 - BUG: flicks to wrong side when switching scroll target
 - Test with different styling cases
