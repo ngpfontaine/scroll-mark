@@ -6,15 +6,11 @@ Often, it's easy to lose your place on a webpage when scrolling - especially tex
 ### Solution
 Animate a visual anchor to help positional tracking
 
-### How
-- The webpage body will automatically use the scroll mark if it's tall enough to overflow-y
-- Or add `.scroll-mark` class to elements you want to use it
-
 ### Setup
-- Import `scroll-mark.css` and 'scroll-mark.js` to your project
+- Import `scroll-mark.css` and `scroll-mark.js` to your project
 - Reference in your html
-- Will automatically act on `<body>` if necessary
-- Add `.scroll-mark` to a non html/body elements if desired
+- Will automatically act on `<body>` if it overflows in y
+- Add `.scroll-mark` to other scroll containers if desired
 - Modify variables and styles if needed
 
 ### Options
