@@ -99,7 +99,9 @@ var scrollm = {
   },
   
   ticker: (e) => {
-    let target = e.target !== undefined ? e.target : e.scrollingElement
+    // TODO: make sure this is fine to remove/swap
+    // let target = e.target !== undefined ? e.target : e.scrollingElement
+    let target = e.target
     // Only if RAF not running
   	if (!scrollm.store.ticking) {
       let delta = Date.now() - scrollm.store.timeThen
@@ -118,7 +120,9 @@ var scrollm = {
   update: (target) => {
     
     // If scrolling body, set active to <html>
-    target = target.activeElement !== undefined ? target.documentElement : target
+    // TODO: make sure this is correct
+    // target = target.activeElement !== undefined ? target.documentElement : target
+    target = target === document ? target.documentElement : target
   
  		// First
     // NOTE: This is happening after first scroll tick, so scrollTop is kinda wrong
