@@ -14,6 +14,7 @@ var scrollm = {
     topStart: 0,
     topUpdate: 0,
     active: false,
+    target: undefined,
     direction: "down",
     ticking: false,
     yOffset: 0,
@@ -57,13 +58,15 @@ var scrollm = {
     let bodyRect = document.body.getBoundingClientRect()
     let mTop = parseFloat(window.getComputedStyle(target, null).getPropertyValue("margin-top"))
     
-    let targetRect, barWidth, xLeft, yTop, yOffset
+    let targetRect, barWidth, xLeft, yTop, yOffset, sbWidth
     // Scrolling body, via html
-    if (target === document.documentElement) {
+    let docElem = document.documentElement
+    if (target === docElem) {
       targetRect = document.body.getBoundingClientRect()
-      barWidth = document.documentElement.clientWidth
-      let htmlMarginTop = parseFloat(window.getComputedStyle(document.documentElement, null).getPropertyValue("margin-top"))
+      barWidth = docElem.clientWidth
+      let htmlMarginTop = parseFloat(window.getComputedStyle(docElem, null).getPropertyValue("margin-top"))
       xLeft = targetRect.left - bodyRect.left
+      sbWidth = window.innerWidth - docElem.clientWidth
       yOffset = targetRect.top - bodyRect.top + mTop - htmlMarginTop
       // TODO: This probably needs more calculation, for unique cases
       yTop = window.innerHeight
@@ -71,7 +74,10 @@ var scrollm = {
     // Scrolling other container
     else {
       targetRect = target.getBoundingClientRect()
+      sbWidth = target.offsetWidth - target.clientWidth
+      // Subtract scrollbar width, NOTE: this doesn't take into account border & box-sizing
       barWidth = target.getBoundingClientRect().width
+      barWidth -= sbWidth
       xLeft = targetRect.left
       yOffset = targetRect.top - bodyRect.top + mTop - document.documentElement.scrollTop
       yTop = targetRect.top - bodyRect.top + targetRect.height - document.documentElement.scrollTop
@@ -89,6 +95,8 @@ var scrollm = {
   },
   
   end: (target) => {
+    console.log("-----")
+    scrollm.store.target = undefined
   	scrollm.store.active = false
     let bars = target.getElementsByClassName("scroll-bar")
     let bar = bars[bars.length-1]
@@ -123,12 +131,15 @@ var scrollm = {
     // TODO: make sure this is correct
     // target = target.activeElement !== undefined ? target.documentElement : target
     target = target === document ? target.documentElement : target
+
+    let firstTick = false
   
  		// First
     // NOTE: This is happening after first scroll tick, so scrollTop is kinda wrong
   	if (!scrollm.store.active) {
-      scrollm.store.active = false
+      scrollm.store.active = true
       scrollm.start(target)
+      firstTick = true
     }
   
   	// Values
@@ -140,14 +151,27 @@ var scrollm = {
     let bars = target.getElementsByClassName("scroll-bar")
     let bar = bars[bars.length-1]
 
+    // When switching target
+    if (scrollm.store.target !== undefined && target !== scrollm.store.target) {
+      // Need to recalc topUpdate
+      scrollm.store.topUpdate = scrollTopNow
+      console.log("switch target")
+    }
+
     // Direction
     let direction
     // Can be equal sometimes, when still scrolling
-    if (scrollTopNow === scrollm.store.topUpdate) {
-    	direction = scrollm.store.direction
+    if (scrollTopNow === scrollm.store.topUpdate && !firstTick) {
+      direction = scrollm.store.direction
     } else {
-    	direction = scrollTopNow > scrollm.store.topUpdate ? "down" : "up"
+      // TODO: sometimes they are === on first tick, so it defaults to "up". which may be wrong
+      console.log(scrollTopNow + " " + scrollm.store.topUpdate)
+      direction = scrollTopNow > scrollm.store.topUpdate ? "down" : "up"
     }
+    console.log(direction + " " + firstTick)
+
+    // Store current target now
+    scrollm.store.target = target
 
     // Change direction
     if (direction !== scrollm.store.direction) {
@@ -170,6 +194,7 @@ var scrollm = {
       } else {
         bar.style.top = scrollm.store.yOffset + "px"
       }
+
     }
     // Bar - scrolled past height of container
     else {
