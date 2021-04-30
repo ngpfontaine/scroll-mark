@@ -41,6 +41,7 @@ var scrollm = {
 
   	scrollm.store.active = true
     scrollm.store.topStart = target.getAttribute("data-scroll-top")
+    scrollm.store.topUpdate = target.scrollTop
 
     let bars = target.getElementsByClassName("scroll-bar")
     let bar = bars[bars.length-1]
@@ -50,9 +51,7 @@ var scrollm = {
       bar = bars[bars.length-1]
     }
     // Reset bars, in case we started scrolling on another container before the other was complete
-    for (let bar of bars) {
-      bar.classList.remove("active")
-    }
+    for (let bar of bars) bar.classList.remove("active")
 
     // Calc & store bar positioning, from scroll container
     let bodyRect = document.body.getBoundingClientRect()
@@ -75,7 +74,8 @@ var scrollm = {
     else {
       targetRect = target.getBoundingClientRect()
       sbWidth = target.offsetWidth - target.clientWidth
-      // Subtract scrollbar width, NOTE: this doesn't take into account border & box-sizing
+      // Subtract scrollbar width
+      // NOTE: this doesn't take into account border & box-sizing
       barWidth = target.getBoundingClientRect().width
       barWidth -= sbWidth
       xLeft = targetRect.left
@@ -89,13 +89,14 @@ var scrollm = {
     scrollm.store.xLeft = xLeft
 
     // Set bar values
+    bar.style.display = "initial"
     bar.style.left = xLeft + "px"
     bar.style.width = barWidth + "px"
 
   },
   
-  end: (target) => {
-    console.log("-----")
+  end: (target, arg) => {
+    console.log("--end--")
     scrollm.store.target = undefined
   	scrollm.store.active = false
     let bars = target.getElementsByClassName("scroll-bar")
@@ -104,11 +105,12 @@ var scrollm = {
     let st = target.scrollTop
     target.setAttribute("data-scroll-top", st)
     scrollm.store.topStart = st
+    if (arg !== undefined && arg === "hard") {
+      bar.style.display = "none"
+    }
   },
   
   ticker: (e) => {
-    // TODO: make sure this is fine to remove/swap
-    // let target = e.target !== undefined ? e.target : e.scrollingElement
     let target = e.target
     // Only if RAF not running
   	if (!scrollm.store.ticking) {
@@ -128,47 +130,50 @@ var scrollm = {
   update: (target) => {
     
     // If scrolling body, set active to <html>
-    // TODO: make sure this is correct
-    // target = target.activeElement !== undefined ? target.documentElement : target
     target = target === document ? target.documentElement : target
 
+    let scrollTopNow = target.scrollTop
+
+    // When switching target
+    if (scrollm.store.target !== undefined && target !== scrollm.store.target) {
+      // Need to recalc topUpdate
+      scrollm.store.topUpdate = scrollTopNow
+      // End old, start new
+      // TODO: may need a force end, or keep transitioning. Since ending the container, but still scrolling the body will break the container bar out of it
+      scrollm.end(scrollm.store.target, "hard")
+      scrollm.start(target)
+    }
+
+    // Initial update fire
     let firstTick = false
-  
- 		// First
-    // NOTE: This is happening after first scroll tick, so scrollTop is kinda wrong
   	if (!scrollm.store.active) {
       scrollm.store.active = true
       scrollm.start(target)
       firstTick = true
     }
   
-  	// Values
-    let scrollTopNow = target.scrollTop
-    // let distance = scrollm.store.topUpdate - scrollm.store.topStart
+    // Values
     let distance = scrollTopNow - scrollm.store.topStart
-    let barHeight = Math.abs(distance)
-    barHeight += scrollm.config.offset
+    let barHeight = Math.abs(distance) + scrollm.config.offset
     let bars = target.getElementsByClassName("scroll-bar")
     let bar = bars[bars.length-1]
-
-    // When switching target
-    if (scrollm.store.target !== undefined && target !== scrollm.store.target) {
-      // Need to recalc topUpdate
-      scrollm.store.topUpdate = scrollTopNow
-      console.log("switch target")
-    }
+    let direction
 
     // Direction
-    let direction
-    // Can be equal sometimes, when still scrolling
-    if (scrollTopNow === scrollm.store.topUpdate && !firstTick) {
+    // NOTE: Can't tell direction on first tick, when scroll values are the same
+    // TODO: Fix. This is a bad solution, since we're capping RAF updates
+    if (firstTick && scrollTopNow === scrollm.store.topUpdate) {
+      return;
+    }
+    // Equal, when scrolling, not first tick
+    else if (!firstTick && scrollTopNow === scrollm.store.topUpdate) {
       direction = scrollm.store.direction
-    } else {
-      // TODO: sometimes they are === on first tick, so it defaults to "up". which may be wrong
-      console.log(scrollTopNow + " " + scrollm.store.topUpdate)
+    }
+    else {
+      // console.log(scrollTopNow + " " + scrollm.store.topUpdate)
       direction = scrollTopNow > scrollm.store.topUpdate ? "down" : "up"
     }
-    console.log(direction + " " + firstTick)
+    // console.log(direction + " " + firstTick)
 
     // Store current target now
     scrollm.store.target = target

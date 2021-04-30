@@ -44,7 +44,8 @@
   <ul>
     <li>Console error, and code exception if wrap class on wrong element</li>
     <li>Prevent display on load, when browser scrolls to previous page state</li>
-    <li>BUG: flicks to wrong side temporarily when switching between 2 separate scroll-mark containers, and scrolling same direction. after end()</li>
+    <li>BUG: flicks to wrong side temporarily when switching between 2 separate scroll-mark containers, and scrolling same direction. after end(). Because direction is flipped for 1 tick, incorrectly</li>
+    <li>BUG: bars should be created on start. Issue if switching target on first scroll, since bar hasn't been created yet</li>
   </ul>
 
   <p>Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Integer cursus porttitor
